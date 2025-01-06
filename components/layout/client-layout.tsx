@@ -3,7 +3,6 @@
 import { AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import Navigation from "./navigation";
-// import Footer from "./footer";
 
 export default function ClientLayout({
   children,
@@ -18,7 +17,6 @@ export default function ClientLayout({
       <AnimatePresence mode="wait">
         <main key={pathname}>{children}</main>
       </AnimatePresence>
-      {/* <Footer /> */}
     </>
   );
 }

@@ -14,6 +14,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         damping: 20,
         duration: 0.2,
       }}
+      className="w-full min-h-screen"
     >
       {children}
     </motion.div>

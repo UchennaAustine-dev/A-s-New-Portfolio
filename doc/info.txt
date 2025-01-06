@@ -1,0 +1,275 @@
+// src/types/project.ts
+export interface ProjectImage {
+  url: string;
+  alt: string;
+  caption?: string;
+}
+
+export interface ProjectDetails {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  year: string;
+  client: string;
+  role: string;
+  timeline: string;
+  overview: string;
+  challenge: string;
+  solution: string;
+  outcome: string;
+  technologies: string[];
+  responsibilities: string[];
+  images: ProjectImage[];
+  nextProject?: {
+    id: string;
+    title: string;
+  };
+}
+
+// src/app/work/[id]/page.tsx
+import { notFound } from "next/navigation"
+import { ProjectHero } from "@/components/projects/project-hero"
+import { ProjectContent } from "@/components/projects/project-content"
+import { ProjectGallery } from "@/components/projects/project-gallery"
+import { ProjectNavigation } from "@/components/projects/project-navigation"
+import { getProjectDetails } from "@/lib/projects"
+
+export default async function ProjectPage({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const project = await getProjectDetails(params.id)
+  
+  if (!project) {
+    notFound()
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <ProjectHero project={project} />
+      <ProjectContent project={project} />
+      <ProjectGallery images={project.images} />
+      <ProjectNavigation nextProject={project.nextProject} />
+    </div>
+  )
+}
+
+// src/components/projects/project-hero.tsx
+import { ProjectDetails } from "@/types/project"
+import Image from "next/image"
+
+interface ProjectHeroProps {
+  project: ProjectDetails;
+}
+
+export function ProjectHero({ project }: ProjectHeroProps) {
+  return (
+    <section className="relative h-screen">
+      <div className="absolute inset-0">
+        <Image
+          src={project.images[0].url}
+          alt={project.images[0].alt}
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
+      
+      <div className="relative z-10 h-full flex items-end pb-24 pl-24 pr-8">
+        <div className="max-w-4xl text-white">
+          <p className="text-lg mb-4">— {project.category}</p>
+          <h1 className="font-italiana text-7xl mb-6">{project.title}</h1>
+          <p className="text-xl max-w-2xl">{project.subtitle}</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// src/components/projects/project-content.tsx
+import { ProjectDetails } from "@/types/project"
+
+interface ProjectContentProps {
+  project: ProjectDetails;
+}
+
+export function ProjectContent({ project }: ProjectContentProps) {
+  return (
+    <section className="py-24 pl-24 pr-8">
+      <div className="max-w-4xl">
+        <div className="grid grid-cols-3 gap-8 mb-24">
+          <div>
+            <h3 className="font-semibold mb-2">Client</h3>
+            <p className="text-neutral-600">{project.client}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Timeline</h3>
+            <p className="text-neutral-600">{project.timeline}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Role</h3>
+            <p className="text-neutral-600">{project.role}</p>
+          </div>
+        </div>
+
+        <div className="space-y-16">
+          <div>
+            <h2 className="font-italiana text-4xl mb-6">Overview</h2>
+            <p className="text-neutral-600 leading-relaxed">{project.overview}</p>
+          </div>
+
+          <div>
+            <h2 className="font-italiana text-4xl mb-6">The Challenge</h2>
+            <p className="text-neutral-600 leading-relaxed">{project.challenge}</p>
+          </div>
+
+          <div>
+            <h2 className="font-italiana text-4xl mb-6">Solution</h2>
+            <p className="text-neutral-600 leading-relaxed">{project.solution}</p>
+          </div>
+
+          <div>
+            <h2 className="font-italiana text-4xl mb-6">Outcome</h2>
+            <p className="text-neutral-600 leading-relaxed">{project.outcome}</p>
+          </div>
+
+          <div>
+            <h2 className="font-italiana text-4xl mb-6">Technologies Used</h2>
+            <div className="flex flex-wrap gap-3">
+              {project.technologies.map((tech) => (
+                <span
+                  key={tech}
+                  className="px-4 py-2 bg-neutral-100 rounded-full text-sm"
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// src/components/projects/project-gallery.tsx
+import { ProjectImage } from "@/types/project"
+import Image from "next/image"
+
+interface ProjectGalleryProps {
+  images: ProjectImage[];
+}
+
+export function ProjectGallery({ images }: ProjectGalleryProps) {
+  return (
+    <section className="py-24 pl-24 pr-8 bg-neutral-50">
+      <div className="max-w-7xl">
+        <div className="grid grid-cols-2 gap-8">
+          {images.slice(1).map((image, index) => (
+            <div key={index} className="relative aspect-[4/3]">
+              <Image
+                src={image.url}
+                alt={image.alt}
+                fill
+                className="object-cover rounded-lg"
+              />
+              {image.caption && (
+                <p className="mt-2 text-sm text-neutral-600">{image.caption}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// src/components/projects/project-navigation.tsx
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
+
+interface ProjectNavigationProps {
+  nextProject?: {
+    id: string;
+    title: string;
+  };
+}
+
+export function ProjectNavigation({ nextProject }: ProjectNavigationProps) {
+  if (!nextProject) return null;
+
+  return (
+    <Link
+      href={`/work/${nextProject.id}`}
+      className="block py-24 pl-24 pr-8 bg-neutral-900 text-white group"
+    >
+      <div className="max-w-4xl">
+        <p className="text-neutral-400 mb-4">Next Project</p>
+        <div className="flex items-center justify-between">
+          <h2 className="font-italiana text-6xl group-hover:text-neutral-300 transition-colors">
+            {nextProject.title}
+          </h2>
+          <ArrowRight className="h-12 w-12 group-hover:translate-x-2 transition-transform" />
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+// src/lib/projects.ts
+import { ProjectDetails } from "@/types/project"
+
+const projects: ProjectDetails[] = [
+  {
+    id: "okalpha",
+    title: "OKALPHA",
+    subtitle: "Digital design and development platform",
+    category: "WEBFLOW DEVELOPMENT",
+    year: "2024",
+    client: "OKALPHA Inc.",
+    role: "Lead Developer",
+    timeline: "3 months",
+    overview: "OKALPHA is a comprehensive digital platform that streamlines the design and development process for creative professionals.",
+    challenge: "The client needed a sophisticated platform that could handle complex design workflows while maintaining an intuitive user interface.",
+    solution: "Implemented a modular architecture using Webflow's CMS and custom code integrations to create a flexible and powerful system.",
+    outcome: "Launched successfully with positive user feedback and a 40% increase in workflow efficiency for early adopters.",
+    technologies: ["Webflow", "JavaScript", "CSS", "Figma", "REST API"],
+    responsibilities: [
+      "Architecture planning",
+      "Custom code implementation",
+      "Performance optimization",
+      "Client communication"
+    ],
+    images: [
+      {
+        url: "/projects/okalpha/hero.jpg",
+        alt: "OKALPHA platform hero image"
+      },
+      {
+        url: "/projects/okalpha/dashboard.jpg",
+        alt: "OKALPHA dashboard interface",
+        caption: "Main dashboard interface showing key features"
+      },
+      {
+        url: "/projects/okalpha/workflow.jpg",
+        alt: "OKALPHA workflow demonstration",
+        caption: "Custom workflow automation system"
+      }
+    ],
+    nextProject: {
+      id: "superlink",
+      title: "SUPERLINK"
+    }
+  }
+]
+
+export async function getProjectDetails(id: string): Promise<ProjectDetails | undefined> {
+  return projects.find(project => project.id === id)
+}
+
+export async function getAllProjects() {
+  return projects
+}
